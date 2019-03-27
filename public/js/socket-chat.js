@@ -1,52 +1,43 @@
-let socket = io()
+var socket = io()
 
-// Obtenemos los parametros de la URL
-let params = new URLSearchParams(window.location.search)
+var params = new URLSearchParams(window.location.search)
 
-// Hacemos la validación
 if (!params.has('nombre') || !params.has('sala')) {
     window.location = 'index.html'
     throw new Error('El nombre y sala son necesarios')
 }
 
-// Creamos un objeto con el parametro
-let usuario = {
+var usuario = {
     nombre: params.get('nombre'),
     sala: params.get('sala')
 }
 
-// Escuchamos la conexión de user
-socket.on('connect', () => {
+socket.on('connect', function () {
     console.log('Conectado al servidor')
-    socket.emit('entrarChat', usuario, resp => {
-        console.log('Usuarios conectados:', resp)
+
+    socket.emit('entrarChat', usuario, function (resp) {
+        renderizarUsers(resp)
     })
 })
 
+// escuchar
+socket.on('disconnect', function () {
+    console.log('Perdimos conexión con el servidor')
+})
+
 // Escuchar información
-socket.on('crearMensaje', mensaje => {
-    console.log('Servidor:', mensaje)
+socket.on('crearMensaje', function (mensaje) {
+    renderizarMensaje(mensaje, false)
 })
 
-// Escuchar cambios de usuario al entrar y salir del mismo
-socket.on('listaPersonas', personas => {
-    console.log(personas);
+// Escuchar cambios de usuarios
+// cuando un usuario entra o sale del chat
+socket.on('listaPersonas', function (personas) {
+    console.log(personas)
+    renderizarUsers(personas)
 })
 
-// Mensaje privado
-socket.on('mensajePrivado', mensaje => {
+// Mensajes privados
+socket.on('mensajePrivado', function (mensaje) {
     console.log('Mensaje Privado:', mensaje)
 })
-
-// Enviar información
-// socket.emit('crearMensaje', {
-//     usuario: 'Fernando',
-//     mensaje: 'Hola Mundo'
-// }, (resp) => {
-//     console.log('respuesta server: ', resp)
-// })
-
-// // escuchar
-// socket.on('disconnect', () => {
-//     console.log('Perdimos conexión con el servidor')
-// })

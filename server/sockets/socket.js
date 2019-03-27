@@ -32,17 +32,20 @@ io.on('connection', client => {
 
         // Emitimos a todos las personas conectadas a el momento de ingresar 
         client.broadcast.to(user.sala).emit('listaPersonas', usuarios.getPersonaPorSala(user.sala))
+        client.broadcast.to(user.sala).emit('crearMensaje', crearMensaje('Administrador', `${user.nombre} se unió a el Chat`))
 
         // Mandamos las persona
         cll(usuarios.getPersonaPorSala(user.sala))
     })
 
     // Escuchamos un mensaje para todos los usuarios
-    client.on('crearMensaje', data => {
+    client.on('crearMensaje', (data, cll) => {
         let persona = usuarios.getPersona(client.id)
 
         let mensaje = crearMensaje(persona.nombre, data.mensaje)
-        client.broadcast.join(persona.sala).emit('crearMensaje', mensaje)
+        client.broadcast.to(persona.sala).emit('crearMensaje', mensaje)
+
+        cll(mensaje)
     })
 
     // Escuchamos mediante el cliente, el evento de desconectar
